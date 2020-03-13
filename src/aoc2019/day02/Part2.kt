@@ -14,7 +14,8 @@ fun main() {
         .map { Integer.parseInt(it) }
 
     val answer = findNounVerb(input)
-    answer?.let {
+
+    if (answer != null) {
         println(answer.first*100 + answer.second)
     }
 }
