@@ -23,6 +23,7 @@ private fun run(instructions: List<Int>): IntcodeProgram {
     }
     val program = IntcodeProgram(modifiedInstructions)
     val interpreter = IntcodeInterpreter(program)
+    interpreter.runProgram()
 
-    return interpreter.runProgram()
+    return program
 }

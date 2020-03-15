@@ -31,7 +31,8 @@ private fun findNounVerb(instructions: List<Int>): NounVerb? {
             })
             val interpreter = IntcodeInterpreter(program)
 
-            val output = interpreter.runProgram().instructions[0]
+            interpreter.runProgram()
+            val output = program.instructions[0]
             return if (output == REQUIRED_OUTPUT) NounVerb(noun, verb) else continue
         }
     }
