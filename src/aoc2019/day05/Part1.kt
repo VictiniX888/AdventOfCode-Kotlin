@@ -17,7 +17,7 @@ fun main() {
     // For Part 2: Type "5" when prompted for input
 }
 
-fun run(instructions: List<Int>) {
+private fun run(instructions: List<Int>) {
     val program = IntcodeProgram(instructions.toMutableList())
     val interpreter = IntcodeInterpreter(program)
 
