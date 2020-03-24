@@ -17,15 +17,13 @@ class IntcodeProgram(val instructions: MutableList<Int>) {
         instructions[parameter3] = product
     }
 
-    fun input(parameter1: Int) {
-        print("Input: ")
-        val int = readLine()?.toIntOrNull()
-        if (int != null) instructions[parameter1] = int else error("Error: Input not recognized")
+    fun input(parameter1: Int, input: Int) {
+        instructions[parameter1] = input
     }
 
-    fun output(parameter1: Int, mode1: Int) {
+    fun output(parameter1: Int, mode1: Int): Int {
         val int1 = getValueSpecified(parameter1, mode1)
-        println(int1)
+        if (int1 != null) return int1 else error("Error: Mode not recognized")
     }
 
     // jump functions return index that pointer should jump to, else returns the original position of pointer (as a function)

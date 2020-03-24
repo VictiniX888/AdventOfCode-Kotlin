@@ -19,6 +19,6 @@ private fun run(instructions: List<Int>): List<Int> {
     val program = IntcodeProgram(instructions.toMutableList())
     val interpreter = IntcodeInterpreter(program)
 
-    return interpreter.runProgram(1)
+    return interpreter.runProgram(5)
         .also { if (interpreter.hasTerminatedSuccessfully) println("Program terminated successfully") }
 }

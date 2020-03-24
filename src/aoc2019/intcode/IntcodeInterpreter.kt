@@ -1,17 +1,20 @@
 package aoc2019.intcode
 
-class IntcodeInterpreter(private val program: IntcodeProgram) {
+class IntcodeInterpreter(private val program: IntcodeProgram, var pointer: Int = 0) {
 
     // create a map of opcode to number of parameters it should take
     private val opcodeParamMap = mapOf(
         1 to 3, 2 to 3, 3 to 1, 4 to 1, 5 to 2, 6 to 2, 7 to 3, 8 to 3, 99 to 0
     )
 
-    fun runProgram(): Boolean {
-        var i = 0
-        var hasTerminatedSuccessfully = false
-        while (i < program.instructions.size) {     // loop until the end of program
-            val currentInstruction = program.instructions[i].toString()
+    var hasTerminatedSuccessfully = false
+
+    fun runProgram(vararg input: Int): List<Int> {
+        val inputList = input.toMutableList()
+        val outputList = mutableListOf<Int>()
+
+        while (pointer < program.instructions.size) {     // loop until the end of program
+            val currentInstruction = program.instructions[pointer].toString()
             val opcode = currentInstruction.takeLast(2)
                 .toInt()
             val paramCount = opcodeParamMap.getOrElse(opcode, { error("Error: Opcode not recognized") })
@@ -22,53 +25,60 @@ class IntcodeInterpreter(private val program: IntcodeProgram) {
 
             when (opcode) {
                 1 -> program.add(
-                    program.instructions[i + 1], program.instructions[i + 2], program.instructions[i + 3],
+                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
                     paramModes[0], paramModes[1]
                 )
 
                 2 -> program.multiply(
-                    program.instructions[i + 1], program.instructions[i + 2], program.instructions[i + 3],
+                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
                     paramModes[0], paramModes[1]
                 )
 
-                3 -> program.input(
-                    program.instructions[i+1]
-                )
+                3 -> {
+                    if (inputList.isEmpty()) {
+                        return outputList   // if there is no more input but input is needed, "pause" the program
+                    }
+                    else {
+                        program.input(
+                            program.instructions[pointer + 1],
+                            inputList.removeAt(0)    // removeAt returns the removed element
+                        )
+                    }
+                }
 
-                4 -> program.output(
-                    program.instructions[i+1],
+                4 -> outputList.add(program.output(
+                    program.instructions[pointer+1],
                     paramModes[0]
-                )
+                ))
 
-                5 -> i = i.let(program.jumpIfTrue(
-                    program.instructions[i + 1], program.instructions[i + 2],
+                5 -> pointer = pointer.let(program.jumpIfTrue(
+                    program.instructions[pointer + 1], program.instructions[pointer + 2],
                     paramModes[0], paramModes[1]
                 ))
 
-                6 -> i = i.let(program.jumpIfFalse(
-                    program.instructions[i + 1], program.instructions[i + 2],
+                6 -> pointer = pointer.let(program.jumpIfFalse(
+                    program.instructions[pointer + 1], program.instructions[pointer + 2],
                     paramModes[0], paramModes[1]
                 ))
 
                 7 -> program.lessThan(
-                    program.instructions[i + 1], program.instructions[i + 2], program.instructions[i + 3],
+                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
                     paramModes[0], paramModes[1]
                 )
 
                 8 -> program.equals(
-                    program.instructions[i + 1], program.instructions[i + 2], program.instructions[i + 3],
+                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
                     paramModes[0], paramModes[1]
                 )
 
                 99 -> {                             // or terminate at opcode 99
-                    i = program.instructions.size
-                    hasTerminatedSuccessfully = true
+                    return outputList.also { hasTerminatedSuccessfully = true }
                 }
             }
 
-            i += paramCount + 1
+            pointer += paramCount + 1
         }
 
-        return hasTerminatedSuccessfully
+        return outputList
     }
 }
