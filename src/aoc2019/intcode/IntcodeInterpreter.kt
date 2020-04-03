@@ -4,14 +4,14 @@ class IntcodeInterpreter(private val program: IntcodeProgram, var pointer: Int =
 
     // create a map of opcode to number of parameters it should take
     private val opcodeParamMap = mapOf(
-        1 to 3, 2 to 3, 3 to 1, 4 to 1, 5 to 2, 6 to 2, 7 to 3, 8 to 3, 99 to 0
+        1 to 3, 2 to 3, 3 to 1, 4 to 1, 5 to 2, 6 to 2, 7 to 3, 8 to 3, 9 to 1, 99 to 0
     )
 
     var hasTerminatedSuccessfully = false
 
-    fun runProgram(vararg input: Int): List<Int> {
+    fun runProgram(vararg input: Long): List<Long> {
         val inputList = input.toMutableList()
-        val outputList = mutableListOf<Int>()
+        val outputList = mutableListOf<Long>()
 
         while (pointer < program.instructions.size) {     // loop until the end of program
             val currentInstruction = program.instructions[pointer].toString()
@@ -26,12 +26,12 @@ class IntcodeInterpreter(private val program: IntcodeProgram, var pointer: Int =
             when (opcode) {
                 1 -> program.add(
                     program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1]
+                    paramModes[0], paramModes[1], paramModes[2]
                 )
 
                 2 -> program.multiply(
                     program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1]
+                    paramModes[0], paramModes[1], paramModes[2]
                 )
 
                 3 -> {
@@ -41,6 +41,7 @@ class IntcodeInterpreter(private val program: IntcodeProgram, var pointer: Int =
                     else {
                         program.input(
                             program.instructions[pointer + 1],
+                            paramModes[0],
                             inputList.removeAt(0)    // removeAt returns the removed element
                         )
                     }
@@ -63,12 +64,17 @@ class IntcodeInterpreter(private val program: IntcodeProgram, var pointer: Int =
 
                 7 -> program.lessThan(
                     program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1]
+                    paramModes[0], paramModes[1], paramModes[2]
                 )
 
                 8 -> program.equals(
                     program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1]
+                    paramModes[0], paramModes[1], paramModes[2]
+                )
+
+                9 -> program.relativeBaseOffset(
+                    program.instructions[pointer + 1],
+                    paramModes[0]
                 )
 
                 99 -> {                             // or terminate at opcode 99

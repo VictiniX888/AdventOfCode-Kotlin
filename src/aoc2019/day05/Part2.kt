@@ -9,13 +9,13 @@ fun main() {
 
     val input = Files.readString(Paths.get("src/aoc2019/day05/input.txt"))
         .split(",")
-        .map { it.toInt() }
+        .map { it.toLong() }
 
     val output = run(input)
     println(output)
 }
 
-private fun run(instructions: List<Int>): List<Int> {
+private fun run(instructions: List<Long>): List<Long> {
     val program = IntcodeProgram(instructions.toMutableList())
     val interpreter = IntcodeInterpreter(program)
 

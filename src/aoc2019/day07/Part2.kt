@@ -9,18 +9,18 @@ fun main() {
 
     val input = Files.readString(Paths.get("src/aoc2019/day07/input.txt"))
         .split(",")
-        .map { it.toInt() }
+        .map { it.toLong() }
 
     val answer = getHighestSignal(input)
     println(answer)
 }
 
-private fun getHighestSignal(instructions: List<Int>): Int? {
+private fun getHighestSignal(instructions: List<Long>): Long? {
     val phaseSequences = listOf(5, 6, 7, 8, 9).permutations()
     return phaseSequences.map { runFeedbackLoop(it, instructions) }.max()
 }
 
-private fun runFeedbackLoop(phaseSettingSequence: List<Int>, instructions: List<Int>): Int {
+private fun runFeedbackLoop(phaseSettingSequence: List<Int>, instructions: List<Long>): Long {
 
     val programs = listOf(
         IntcodeProgram(instructions.toMutableList()),
@@ -33,13 +33,13 @@ private fun runFeedbackLoop(phaseSettingSequence: List<Int>, instructions: List<
     val pointers = mutableListOf(0, 0, 0, 0, 0)
 
     var hasTerminated = false
-    var outputSignal = 0
+    var outputSignal = 0L
 
     // initialization of phase setting on each program
     for (i in programs.indices) {
         programs[i].apply {
             val interpreter = IntcodeInterpreter(first)
-            interpreter.runProgram(second)
+            interpreter.runProgram(second.toLong())
             pointers[i] = interpreter.pointer
         }
     }

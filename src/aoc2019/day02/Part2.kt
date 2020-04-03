@@ -11,7 +11,7 @@ fun main() {
 
     val input = Files.readString(Paths.get("src/aoc2019/day02/input.txt"))
         .split(",")
-        .map { Integer.parseInt(it) }
+        .map { it.toLong() }
 
     val answer = findNounVerb(input)
 
@@ -21,19 +21,19 @@ fun main() {
 }
 
 private typealias NounVerb = Pair<Int, Int>
-private fun findNounVerb(instructions: List<Int>): NounVerb? {
+private fun findNounVerb(instructions: List<Long>): NounVerb? {
 
     for (noun in 0..99) {
         for (verb in 0..99) {
             val program = IntcodeProgram(instructions.toMutableList().apply {
-                this[1] = noun
-                this[2] = verb
+                this[1] = noun.toLong()
+                this[2] = verb.toLong()
             })
             val interpreter = IntcodeInterpreter(program)
 
             interpreter.runProgram()
             val output = program.instructions[0]
-            return if (output == REQUIRED_OUTPUT) NounVerb(noun, verb) else continue
+            return if (output == REQUIRED_OUTPUT.toLong()) NounVerb(noun, verb) else continue
         }
     }
 
