@@ -30,31 +30,23 @@ private fun runFeedbackLoop(phaseSettingSequence: List<Int>, instructions: List<
         IntcodeProgram(instructions.toMutableList())
     ).zip(phaseSettingSequence)
 
-    val pointers = mutableListOf(0, 0, 0, 0, 0)
-
     var hasTerminated = false
     var outputSignal = 0L
 
     // initialization of phase setting on each program
-    for (i in programs.indices) {
-        programs[i].apply {
-            val interpreter = IntcodeInterpreter(first)
-            interpreter.runProgram(second.toLong())
-            pointers[i] = interpreter.pointer
-        }
+    val interpreters = programs.map { (program, phase) ->
+        IntcodeInterpreter(program).apply { sendInput(phase.toLong()) }
     }
 
     // feed output back into input as long as none of the programs have terminated
     while (!hasTerminated) {
-        for (i in programs.indices) {
-            val program = programs[i].first
-            val interpreter = IntcodeInterpreter(program, pointers[i])
-            outputSignal = interpreter.runProgram(outputSignal).first()
-            pointers[i] = interpreter.pointer
+        interpreters.forEach {
+            it.sendInput(outputSignal)
+            it.runProgram()
+            outputSignal = it.getOutput()
 
-            // check whether amplifier E (last program) has terminated
-            if (i == programs.size - 1) {
-                hasTerminated = interpreter.hasTerminatedSuccessfully
+            if (it.hasTerminatedSuccessfully) {
+                hasTerminated = true
             }
         }
     }

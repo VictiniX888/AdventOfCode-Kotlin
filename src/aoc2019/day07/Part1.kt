@@ -25,9 +25,9 @@ private fun amplifyAll(phaseSettingSequence: List<Int>, instructions: List<Long>
 
 private fun amplify(phaseSetting: Int, inputSignal: Long, instructions: List<Long>): Long {
     val program = IntcodeProgram(instructions.toMutableList())
-    val interpreter = IntcodeInterpreter(program)
+    val interpreter = IntcodeInterpreter(program).apply { sendInput(phaseSetting.toLong(), inputSignal) }
 
-    return interpreter.runProgram(phaseSetting.toLong(), inputSignal).first()
+    return interpreter.runProgram().first()
 }
 
 private fun <T> List<T>.permutations(): List<List<T>> {

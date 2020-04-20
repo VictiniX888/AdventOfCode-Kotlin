@@ -1,17 +1,18 @@
 package aoc2019.intcode
 
-class IntcodeInterpreter(private val program: IntcodeProgram, var pointer: Int = 0) {
+class IntcodeInterpreter(private val program: IntcodeProgram, private var pointer: Int = 0) {
 
     // create a map of opcode to number of parameters it should take
     private val opcodeParamMap = mapOf(
         1 to 3, 2 to 3, 3 to 1, 4 to 1, 5 to 2, 6 to 2, 7 to 3, 8 to 3, 9 to 1, 99 to 0
     )
 
+    private val inputList = mutableListOf<Long>()
+    private val outputList = mutableListOf<Long>()
+
     var hasTerminatedSuccessfully = false
 
-    fun runProgram(vararg input: Long): List<Long> {
-        val inputList = input.toMutableList()
-        val outputList = mutableListOf<Long>()
+    fun runProgram(): List<Long> {
 
         while (pointer < program.instructions.size) {     // loop until the end of program
             val currentInstruction = program.instructions[pointer].toString()
@@ -87,4 +88,8 @@ class IntcodeInterpreter(private val program: IntcodeProgram, var pointer: Int =
 
         return outputList
     }
+
+    fun sendInput(vararg input: Long) = inputList.addAll(input.toList())
+
+    fun getOutput() = if (outputList.isNotEmpty()) outputList.removeAt(0) else error("Error: No output found")
 }

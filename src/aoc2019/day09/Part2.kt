@@ -15,7 +15,7 @@ fun main() {
 
 private fun run(instructions: List<Long>): List<Long> {
     val program = IntcodeProgram(instructions.toMutableList())
-    val interpreter = IntcodeInterpreter(program)
+    val interpreter = IntcodeInterpreter(program).apply { sendInput(2) }
 
-    return interpreter.runProgram(2)
+    return interpreter.runProgram()
 }
