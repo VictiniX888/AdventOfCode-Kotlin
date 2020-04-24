@@ -92,4 +92,6 @@ class IntcodeInterpreter(private val program: IntcodeProgram, private var pointe
     fun sendInput(vararg input: Long) = inputList.addAll(input.toList())
 
     fun getOutput() = if (outputList.isNotEmpty()) outputList.removeAt(0) else error("Error: No output found")
+
+    fun getAllOutputs() = outputList.toList().also { outputList.clear() }
 }
