@@ -19,7 +19,7 @@ private fun countCollisions(slope: Pair<Int, Int>, map: List<String>): Int {
     var x = 0
     var collisions = 0
 
-    for (y in 1 until map.size step slopeY) {
+    for (y in slopeY until map.size step slopeY) {
         x = (x + slopeX) % width
         if (map[y][x] == '#') {
             collisions++
