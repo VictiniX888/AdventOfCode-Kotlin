@@ -13,6 +13,23 @@ fun main() {
     println(answer)
 }
 
+// ~1s on my machine
+private fun memoryGame(nums: List<Int>, limit: Int): Int {
+    // initialize array
+    val memory = IntArray(limit)
+    nums.dropLast(1).forEachIndexed { index, num -> memory[num] = index + 1 }
+
+    var nextNum = nums.last()
+    for (i in nums.size until limit) {
+        nextNum = memory[nextNum].let { if (it == 0) 0 else i - it }
+            .also { memory[nextNum] = i }
+    }
+
+    return nextNum
+}
+
+// previous implementation, ~7s on my machine
+/*
 private fun memoryGame(nums: List<Int>, limit: Int): Int {
     // initialize map
     val memory = HashMap<Int, Int>()
@@ -26,3 +43,4 @@ private fun memoryGame(nums: List<Int>, limit: Int): Int {
 
     return nextNum
 }
+*/
