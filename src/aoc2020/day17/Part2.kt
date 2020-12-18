@@ -2,17 +2,14 @@ package aoc2020.day17
 
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.system.measureTimeMillis
 
 fun main() {
 
-    measureTimeMillis {
-        val input = Files.readAllLines(Paths.get("src/aoc2020/day17/input.txt"))
-            .map { line -> line.map { c -> c == '#' } }
+    val input = Files.readAllLines(Paths.get("src/aoc2020/day17/input.txt"))
+        .map { line -> line.map { c -> c == '#' } }
 
-        val answer = simulate(input, 6)
-        println(answer)
-    }.also { println(it) }
+    val answer = simulate(input, 6)
+    println(answer)
 }
 
 // faster implementation, ~100ms on my machine
