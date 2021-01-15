@@ -2,32 +2,75 @@ package aoc2019.day18
 
 import java.nio.file.Files
 import java.nio.file.Paths
-import kotlin.system.measureTimeMillis
 
 private const val KEYS = 26
-
-private val pathCache = MutableList(KEYS) { mutableListOf<Pair<Set<Char>, Char>>() }
-private val stepCache = MutableList(KEYS) { mutableListOf<Int>() }
 
 fun main() {
 
     val input = Files.readAllLines(Paths.get("src/aoc2019/day18/input.txt"))
-    val time = measureTimeMillis {
-        val map = createMap(input)
-        val graph = createGraph(map)
-        val answer = findShortestDistance(graph)
-        println(answer)
-    }
-    println(time)
+
+    val map = createMap(input)
+    val graph = createGraph(map)
+    val answer = findShortestDistance(graph)
+    println(answer)
 }
 
-private typealias Doors = List<Char>
-private typealias State = Triple<Point, Direction, Doors>
+typealias Doors = List<Char>
+typealias State = Triple<Point, Direction, Doors>
 // Graph is a pair of 2D arrays. Array 1 holds weights of edges and array 2 holds doors between edges
-// Indices: 0 -> @; 1-26 -> a-z
-private typealias Graph = Pair<Array<Array<Int>>, Array<Array<List<Char>>>>
+// Indices: Part 1: 0 -> @; 1-26 -> a-z     Part 2: 0-3 -> @; 4-29 -> a-z
+typealias Graph = Pair<Array<Array<Int>>, Array<Array<List<Char>>>>
+
+// bfs with pruning, ~2 seconds on my machine
+private fun findShortestDistance(graph: Graph): Int {
+    var states = mutableMapOf<Pair<Char, Set<Char>>, Int>()
+
+    // initialize states
+    states[Pair('@', emptySet())] = 0
+
+    val (edges, doors) = graph
+    val allKeys = ('a' until 'a' + KEYS).toSet()
+
+    repeat(KEYS) {
+        val newStates = mutableMapOf<Pair<Char, Set<Char>>, Int>()
+
+        for (state in states) {
+            val (keys, steps) = state
+            val (currentKey, prevKeys) = keys
+
+            if (currentKey == '@') {
+                for (nextKey in allKeys) {
+                    val nextDoors = doors[0][nextKey - 'a' + 1]
+                    if ((prevKeys + currentKey).containsAll(nextDoors)) {
+                        val minSteps = newStates[Pair(nextKey, prevKeys + currentKey)]
+                        val newSteps = steps + edges[0][nextKey - 'a' + 1]
+                        if (minSteps == null || newSteps < minSteps) {
+                            newStates[Pair(nextKey, prevKeys + currentKey)] = newSteps
+                        }
+                    }
+                }
+            } else {
+                for (nextKey in allKeys - currentKey - prevKeys) {
+                    val nextDoors = doors[currentKey - 'a' + 1][nextKey - 'a' + 1]
+                    if ((prevKeys + currentKey).containsAll(nextDoors)) {
+                        val minSteps = newStates[Pair(nextKey, prevKeys + currentKey)]
+                        val newSteps = steps + edges[currentKey - 'a' + 1][nextKey - 'a' + 1]
+                        if (minSteps == null || newSteps < minSteps) {
+                            newStates[Pair(nextKey, prevKeys + currentKey)] = newSteps
+                        }
+                    }
+                }
+            }
+        }
+
+        states = newStates
+    }
+
+    return states.values.minOrNull() ?: -1
+}
 
 // using a dfs implementation, ~50 seconds on my input
+/*
 private fun findShortestDistance(graph: Graph): Int {
     val (edges, doors) = graph
     var minSteps = Int.MAX_VALUE
@@ -99,6 +142,7 @@ private fun dfs(path: Set<Char>, start: Char, neighbors: Set<Char>, depth: Int, 
         }
     }
 }
+ */
 
 private fun createGraph(map: Grid): Graph {
     val weights = Array(KEYS + 1) { Array(KEYS + 1) { -1 } }
@@ -157,7 +201,7 @@ private fun createGraph(map: Grid): Graph {
     return Pair(weights, doorGrid)
 }
 
-// an earlier approach, ~21 seconds on my input
+// an earlier bfs approach, ~21 seconds on my input
 /*
 private fun bfs(map: Grid): Int {
     var hasFoundAllKeys = false

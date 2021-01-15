@@ -10,7 +10,7 @@ class Grid(private val initVal: Int) {
     private val gridList = mutableListOf(initVal)
 
     fun width() = xRange.count()
-    //fun height() = yRange.count()
+    fun height() = yRange.count()
 
     fun set(value: Int, x: Int, y: Int) {
         if (x in xRange && y in yRange) {
