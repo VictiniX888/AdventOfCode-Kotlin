@@ -9,84 +9,97 @@ class IntcodeInterpreter(private val program: IntcodeProgram, private var pointe
 
     private val inputList = mutableListOf<Long>()
     private val outputList = mutableListOf<Long>()
+    
+    val input
+        get() = inputList
+    val output
+        get() = outputList
 
     var hasTerminatedSuccessfully = false
+    var isWaitingForInput = false
 
     fun runProgram(): List<Long> {
+        isWaitingForInput = false
 
-        while (pointer < program.instructions.size) {     // loop until the end of program
-            val currentInstruction = program.instructions[pointer].toString()
-            val opcode = currentInstruction.takeLast(2)
-                .toInt()
-            val paramCount = opcodeParamMap.getOrElse(opcode, { error("Error: Opcode not recognized") })
-            val paramModes = currentInstruction.dropLast(2)
-                .padStart(paramCount, '0')
-                .reversed()
-                .map { it.toInt() - 48 }            // char.toInt() gives ASCII value of the character
-
-            when (opcode) {
-                1 -> program.add(
-                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1], paramModes[2]
-                )
-
-                2 -> program.multiply(
-                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1], paramModes[2]
-                )
-
-                3 -> {
-                    if (inputList.isEmpty()) {
-                        return outputList   // if there is no more input but input is needed, "pause" the program
-                    }
-                    else {
-                        program.input(
-                            program.instructions[pointer + 1],
-                            paramModes[0],
-                            inputList.removeAt(0)    // removeAt returns the removed element
-                        )
-                    }
-                }
-
-                4 -> outputList.add(program.output(
-                    program.instructions[pointer+1],
-                    paramModes[0]
-                ))
-
-                5 -> pointer = pointer.let(program.jumpIfTrue(
-                    program.instructions[pointer + 1], program.instructions[pointer + 2],
-                    paramModes[0], paramModes[1]
-                ))
-
-                6 -> pointer = pointer.let(program.jumpIfFalse(
-                    program.instructions[pointer + 1], program.instructions[pointer + 2],
-                    paramModes[0], paramModes[1]
-                ))
-
-                7 -> program.lessThan(
-                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1], paramModes[2]
-                )
-
-                8 -> program.equals(
-                    program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
-                    paramModes[0], paramModes[1], paramModes[2]
-                )
-
-                9 -> program.relativeBaseOffset(
-                    program.instructions[pointer + 1],
-                    paramModes[0]
-                )
-
-                99 -> {                             // or terminate at opcode 99
-                    return outputList.also { hasTerminatedSuccessfully = true }
-                }
-            }
-
-            pointer += paramCount + 1
+        while (pointer < program.instructions.size && !hasTerminatedSuccessfully && !isWaitingForInput) {     // loop until the end of program
+            stepProgram()
         }
 
         return outputList
+    }
+    
+    fun stepProgram() {
+        val currentInstruction = program.instructions[pointer].toString()
+        val opcode = currentInstruction.takeLast(2)
+            .toInt()
+        val paramCount = opcodeParamMap.getOrElse(opcode, { error("Error: Opcode not recognized") })
+        val paramModes = currentInstruction.dropLast(2)
+            .padStart(paramCount, '0')
+            .reversed()
+            .map { it.toInt() - 48 }            // char.toInt() gives ASCII value of the character
+
+        when (opcode) {
+            1 -> program.add(
+                program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
+                paramModes[0], paramModes[1], paramModes[2]
+            )
+
+            2 -> program.multiply(
+                program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
+                paramModes[0], paramModes[1], paramModes[2]
+            )
+
+            3 -> {
+                if (inputList.isEmpty()) {
+                    isWaitingForInput = true   // if there is no more input but input is needed, "pause" the program
+                    return
+                }
+                else {
+                    program.input(
+                        program.instructions[pointer + 1],
+                        paramModes[0],
+                        inputList.removeAt(0)    // removeAt returns the removed element
+                    )
+                }
+            }
+
+            4 -> outputList.add(program.output(
+                program.instructions[pointer+1],
+                paramModes[0]
+            ))
+
+            5 -> pointer = pointer.let(program.jumpIfTrue(
+                program.instructions[pointer + 1], program.instructions[pointer + 2],
+                paramModes[0], paramModes[1]
+            ))
+
+            6 -> pointer = pointer.let(program.jumpIfFalse(
+                program.instructions[pointer + 1], program.instructions[pointer + 2],
+                paramModes[0], paramModes[1]
+            ))
+
+            7 -> program.lessThan(
+                program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
+                paramModes[0], paramModes[1], paramModes[2]
+            )
+
+            8 -> program.equals(
+                program.instructions[pointer + 1], program.instructions[pointer + 2], program.instructions[pointer + 3],
+                paramModes[0], paramModes[1], paramModes[2]
+            )
+
+            9 -> program.relativeBaseOffset(
+                program.instructions[pointer + 1],
+                paramModes[0]
+            )
+
+            99 -> {                             // or terminate at opcode 99
+                hasTerminatedSuccessfully = true
+                return
+            }
+        }
+
+        pointer += paramCount + 1
     }
 
     fun sendInput(vararg input: Long) = inputList.addAll(input.toList())
